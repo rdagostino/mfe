@@ -1,4 +1,4 @@
-name: deploy-container
+name: deploy-container-s3
 on:
   push:
     branches:
