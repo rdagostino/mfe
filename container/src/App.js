@@ -1,6 +1,7 @@
 import { createGenerateClassName, StylesProvider } from '@material-ui/core/styles';
-import React, { lazy, Suspense, useState } from 'react';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { createBrowserHistory } from 'history';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
+import { Redirect, Route, Router, Switch } from 'react-router-dom';
 import Header from './components/Header';
 import Progress from './components/Progress';
 
@@ -12,11 +13,19 @@ const generateClassName = createGenerateClassName({
   productionPrefix: 'co',
 });
 
+const history = createBrowserHistory();
+
 export default () => {
   const [isSignedIn, setIsSignedIn] = useState(false);
 
+  useEffect(() => {
+    if (isSignedIn) {
+      history.push('/dashboard');
+    }
+  }, [isSignedIn]);
+
   return (
-    <BrowserRouter>
+    <Router history={history}>
       <StylesProvider generateClassName={generateClassName}>
         <Header isSignedIn={isSignedIn} onSignOut={() => setIsSignedIn(false)} />
         <Suspense fallback={<Progress />}>
@@ -24,11 +33,14 @@ export default () => {
             <Route path='/auth'>
               <AuthApp onSignIn={() => setIsSignedIn(true)} />
             </Route>
-            <Route path='/dashboard' component={DashboardApp} />
+            <Route path='/dashboard'>
+              {!isSignedIn && <Redirect to='/' />}
+              <DashboardApp />
+            </Route>
             <Route path='/' component={MarketingApp} />
           </Switch>
         </Suspense>
       </StylesProvider>
-    </BrowserRouter>
+    </Router>
   );
 };
